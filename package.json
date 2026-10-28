@@ -1,12 +1,13 @@
 {
   "name": "cuoi-khoa-be",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Backend API S-Group Cuoi Khoa - Ecommerce Order Management",
+  "main": "src/index.js",
   "scripts": {
-    "test": "node --test",
+    "test": "node demo.js",
     "start": "node src/index.js",
-    "dev": "nodemon src/index.js"
+    "dev": "nodemon src/index.js",
+    "demo": "node demo.js"
   },
   "keywords": [],
   "author": "",

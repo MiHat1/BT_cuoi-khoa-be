@@ -17,6 +17,12 @@ export const orderController = {
         return new HttpResponse(res).success(orders);
     },
 
+    async getById(req, res) {
+        const userId = req.user.role === 'admin' ? undefined : req.user.id;
+        const order = await orderService.findById(req.params.id, { userId });
+        return new HttpResponse(res).success(order);
+    },
+
     async updateStatus(req, res) {
         const order = await orderService.updateStatus(req.params.id, req.body.status);
         return new HttpResponse(res).success(order, 'Order status updated successfully');

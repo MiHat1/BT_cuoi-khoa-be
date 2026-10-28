@@ -31,4 +31,9 @@ export const productController = {
         await productService.deactivate(req.params.id);
         return new HttpResponse(res).success(null, 'Product deactivated successfully');
     },
+
+    async delete(req, res) {
+        await productService.delete(req.params.id);
+        return new HttpResponse(res).success(null, 'Product deleted successfully');
+    },
 };
