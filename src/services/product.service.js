@@ -21,7 +21,7 @@ export const productService = {
             const id = await productRepository.create(product);
             return await this.findById(id, true);
         } catch (error) {
-            if (error.code === 'ER_DUP_ENTRY') throw new ConflictError('Product SKU is already in use');
+            if (error.code === 'ER_DUP_ENTRY') throw new ConflictError('Product already exists');
             throw error;
         }
     },
@@ -31,7 +31,7 @@ export const productService = {
         try {
             await productRepository.update(id, product);
         } catch (error) {
-            if (error.code === 'ER_DUP_ENTRY') throw new ConflictError('Product SKU is already in use');
+            if (error.code === 'ER_DUP_ENTRY') throw new ConflictError('Product update conflict');
             throw error;
         }
         return this.findById(id, true);
@@ -40,5 +40,10 @@ export const productService = {
     async deactivate(id) {
         await this.findById(id, true);
         await productRepository.deactivate(id);
+    },
+
+    async delete(id) {
+        await this.findById(id, true);
+        await productRepository.delete(id);
     },
 };

@@ -12,6 +12,7 @@ router.get('/:id', validate(productIdSchema, 'params'), productController.getByI
 
 router.post('/', authenticate, authorize('admin'), validate(createProductSchema), productController.create);
 router.patch('/:id', authenticate, authorize('admin'), validate(productIdSchema, 'params'), validate(updateProductSchema), productController.update);
-router.delete('/:id', authenticate, authorize('admin'), validate(productIdSchema, 'params'), productController.deactivate);
+router.patch('/:id/deactivate', authenticate, authorize('admin'), validate(productIdSchema, 'params'), productController.deactivate);
+router.delete('/:id', authenticate, authorize('admin'), validate(productIdSchema, 'params'), productController.delete);
 
 export default router;

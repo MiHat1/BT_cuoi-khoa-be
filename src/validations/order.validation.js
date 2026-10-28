@@ -11,7 +11,10 @@ export const createOrderSchema = z.object({
 });
 
 export const updateOrderStatusSchema = z.object({
-    status: z.enum(['pending', 'confirmed', 'shipped', 'delivered', 'cancelled']),
+    status: z.preprocess(
+        (val) => (typeof val === 'string' ? val.trim().toUpperCase() : val),
+        z.enum(['PENDING', 'SHIPPING', 'DELIVERED', 'CANCELLED'])
+    ),
 });
 
 export const orderIdSchema = z.object({

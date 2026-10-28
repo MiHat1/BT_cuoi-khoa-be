@@ -1,13 +1,34 @@
 import pool from '../config/db.config.js';
 
+const toCents = (amount) => {
+    const num = Number(amount);
+    return BigInt(Math.round(num * 100));
+};
+
+const fromCents = (cents) => {
+    const isNegative = cents < 0n;
+    const abs = isNegative ? -cents : cents;
+    const whole = abs / 100n;
+    const fraction = (abs % 100n).toString().padStart(2, '0');
+    return `${isNegative ? '-' : ''}${whole}.${fraction}`;
+};
+
+const isValidDecimalAmount = (cents) => {
+    return cents >= 0n && cents <= 999999999999n;
+};
+
 const mapOrdersWithItems = async (queryable, orders) => {
     if (orders.length === 0) return [];
 
     const ids = orders.map((order) => order.id);
     const placeholders = ids.map(() => '?').join(', ');
     const [items] = await queryable.query(
-        `SELECT id, order_id, product_id, product_name, quantity, unit_price, line_total
-         FROM order_items WHERE order_id IN (${placeholders}) ORDER BY id`,
+        `SELECT oi.id, oi.order_id, oi.product_id, COALESCE(p.name, 'Product') AS product_name,
+                oi.quantity, oi.unit_price, CAST(oi.quantity * oi.unit_price AS DECIMAL(12, 2)) AS line_total
+         FROM orders_items oi
+         LEFT JOIN products p ON oi.product_id = p.id
+         WHERE oi.order_id IN (${placeholders})
+         ORDER BY oi.id`,
         ids
     );
     const itemsByOrderId = new Map(orders.map((order) => [Number(order.id), []]));
@@ -63,23 +84,22 @@ export const orderRepository = {
             if (!isValidDecimalAmount(totalCents)) {
                 throw new Error('ORDER_TOTAL_TOO_LARGE');
             }
+
             const [orderResult] = await connection.query(
                 'INSERT INTO orders (user_id, total_amount, status) VALUES (?, ?, ?)',
-                [userId, fromCents(totalCents), 'pending']
+                [userId, fromCents(totalCents), 'PENDING']
             );
 
             for (const item of preparedItems) {
                 await connection.query(
-                    `INSERT INTO order_items
-                     (order_id, product_id, product_name, quantity, unit_price, line_total)
-                     VALUES (?, ?, ?, ?, ?, ?)`,
+                    `INSERT INTO orders_items
+                     (order_id, product_id, quantity, unit_price)
+                     VALUES (?, ?, ?, ?)`,
                     [
                         orderResult.insertId,
                         item.product.id,
-                        item.product.name,
                         item.quantity,
                         item.unitPrice,
-                        fromCents(item.lineTotalCents),
                     ]
                 );
                 await connection.query(
@@ -113,7 +133,7 @@ export const orderRepository = {
             values.push(userId);
         }
         const [orders] = await pool.query(
-            `SELECT id, user_id, total_amount, status, created_at, updated_at
+            `SELECT id, user_id, total_amount, status, created_at
              FROM orders WHERE id = ? ${userFilter}`,
             values
         );
@@ -125,7 +145,7 @@ export const orderRepository = {
         const userFilter = userId === undefined ? '' : 'WHERE user_id = ?';
         if (userId !== undefined) values.push(userId);
         const [orders] = await pool.query(
-            `SELECT id, user_id, total_amount, status, created_at, updated_at
+            `SELECT id, user_id, total_amount, status, created_at
              FROM orders ${userFilter} ORDER BY created_at DESC`,
             values
         );
@@ -149,20 +169,28 @@ export const orderRepository = {
                 return false;
             }
 
+            const currentStatus = String(order.status).toUpperCase();
+            const targetStatus = String(status).toUpperCase();
+
+            // Terminal states: DELIVERED or CANCELLED cannot transition further
+            if (currentStatus === 'DELIVERED' || currentStatus === 'CANCELLED') {
+                throw new Error('ORDER_ALREADY_FINISHED');
+            }
+
             const allowedTransitions = {
-                pending: ['confirmed', 'cancelled'],
-                confirmed: ['shipped', 'cancelled'],
-                shipped: ['delivered'],
-                delivered: [],
-                cancelled: [],
+                PENDING: ['SHIPPING', 'CANCELLED'],
+                SHIPPING: ['DELIVERED', 'CANCELLED'],
+                DELIVERED: [],
+                CANCELLED: [],
             };
-            if (order.status !== status && !allowedTransitions[order.status].includes(status)) {
+
+            if (currentStatus !== targetStatus && !allowedTransitions[currentStatus]?.includes(targetStatus)) {
                 throw new Error('ORDER_INVALID_STATUS_TRANSITION');
             }
 
-            if (status === 'cancelled' && order.status !== 'cancelled') {
+            if (targetStatus === 'CANCELLED' && currentStatus !== 'CANCELLED') {
                 const [items] = await connection.query(
-                    'SELECT product_id, quantity FROM order_items WHERE order_id = ?',
+                    'SELECT product_id, quantity FROM orders_items WHERE order_id = ?',
                     [id]
                 );
                 for (const item of items) {
@@ -173,7 +201,7 @@ export const orderRepository = {
                 }
             }
 
-            await connection.query('UPDATE orders SET status = ? WHERE id = ?', [status, id]);
+            await connection.query('UPDATE orders SET status = ? WHERE id = ?', [targetStatus, id]);
             await connection.commit();
             transactionStarted = false;
             return true;
