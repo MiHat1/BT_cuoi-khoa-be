@@ -17,8 +17,7 @@ const createToken = (user) => jwt.sign(
 const toAuthResponse = (user) => ({
     user: {
         id: user.id,
-        username: user.username || user.full_name,
-        full_name: user.full_name || user.username,
+        full_name: user.full_name,
         email: user.email,
         role: user.role,
     },
@@ -26,7 +25,7 @@ const toAuthResponse = (user) => ({
 });
 
 export const authService = {
-    async register({ username, full_name, email, password }) {
+    async register({ full_name, email, password }) {
         if (await authRepository.findByEmail(email)) {
             throw new ConflictError('Email is already registered');
         }
@@ -35,15 +34,14 @@ export const authService = {
         let userId;
         try {
             userId = await authRepository.createUser({
-                username: username || full_name,
-                full_name: full_name || username,
+                full_name,
                 email,
                 password_hash: passwordHash,
                 role: 'user',
             });
         } catch (error) {
             if (error.code === 'ER_DUP_ENTRY') {
-                throw new ConflictError('Email or username is already in use');
+                throw new ConflictError('Email is already in use');
             }
             throw error;
         }
@@ -53,10 +51,11 @@ export const authService = {
         return toAuthResponse(user);
     },
 
-    async login({ email, password }) {
-        const user = await authRepository.findByEmail(email);
+    async login({ email, full_name, identifier, password }) {
+        const loginTarget = email || full_name || identifier;
+        const user = await authRepository.findByIdentifier(loginTarget);
         if (!user) {
-            throw new UnauthorizedError('Email or password is incorrect');
+            throw new UnauthorizedError('Invalid credentials');
         }
 
         if (user.is_active === 0) {
@@ -76,7 +75,7 @@ export const authService = {
         }
 
         if (!isMatch) {
-            throw new UnauthorizedError('Email or password is incorrect');
+            throw new UnauthorizedError('Invalid credentials');
         }
 
         return toAuthResponse(user);

@@ -24,7 +24,7 @@ export const userService = {
             await userRepository.updateProfile(id, profile);
         } catch (error) {
             if (error.code === 'ER_DUP_ENTRY') {
-                throw new ConflictError('Email or username is already in use');
+                throw new ConflictError('Email is already in use');
             }
             throw error;
         }

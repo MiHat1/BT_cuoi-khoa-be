@@ -3,14 +3,14 @@ import pool from '../config/db.config.js';
 export const userRepository = {
     async findAll() {
         const [rows] = await pool.query(
-            'SELECT id, full_name, full_name AS username, email, role, is_active, created_at FROM users ORDER BY id'
+            'SELECT id, full_name, email, role, is_active, created_at FROM users ORDER BY id ASC'
         );
         return rows;
     },
 
     async findById(id) {
         const [rows] = await pool.query(
-            'SELECT id, full_name, full_name AS username, email, role, is_active, created_at FROM users WHERE id = ?',
+            'SELECT id, full_name, email, role, is_active, created_at FROM users WHERE id = ?',
             [id]
         );
         return rows[0] ?? null;
@@ -18,7 +18,7 @@ export const userRepository = {
 
     async findAuthUserById(id) {
         const [rows] = await pool.query(
-            'SELECT id, full_name, full_name AS username, email, role, is_active FROM users WHERE id = ?',
+            'SELECT id, full_name, email, role, is_active FROM users WHERE id = ?',
             [id]
         );
         return rows[0] ?? null;
@@ -26,7 +26,7 @@ export const userRepository = {
 
     async findByEmail(email) {
         const [rows] = await pool.query(
-            'SELECT id, email FROM users WHERE email = ?',
+            'SELECT id, full_name, email FROM users WHERE email = ?',
             [email]
         );
         return rows[0] ?? null;
@@ -36,9 +36,9 @@ export const userRepository = {
         const fields = [];
         const values = [];
 
-        if (profile.full_name !== undefined || profile.username !== undefined) {
+        if (profile.full_name !== undefined) {
             fields.push('full_name = ?');
-            values.push(profile.full_name ?? profile.username);
+            values.push(profile.full_name);
         }
 
         if (profile.email !== undefined) {
