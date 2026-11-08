@@ -5,7 +5,7 @@ import { ForbiddenError, UnauthorizedError } from '../utils/error.helper.js';
 export const authenticate = async (req, res, next) => {
     const authorization = req.get('authorization');
     if (!authorization?.startsWith('Bearer ')) {
-        throw new UnauthorizedError('Bearer token is required');
+        throw new UnauthorizedError('thieu Bearer token');
     }
 
     let payload;
@@ -14,18 +14,18 @@ export const authenticate = async (req, res, next) => {
         payload = jwt.verify(authorization.slice(7), secret);
     } catch (error) {
         if (error.name === 'JsonWebTokenError' || error.name === 'TokenExpiredError') {
-            throw new UnauthorizedError('Invalid or expired token');
+            throw new UnauthorizedError('token k hop le');
         }
         throw error;
     }
 
     if (typeof payload === 'string' || !payload.sub) {
-        throw new UnauthorizedError('Invalid token payload');
+        throw new UnauthorizedError('token k hop le');
     }
 
     const user = await userRepository.findAuthUserById(payload.sub);
     if (!user || user.is_active === 0) {
-        throw new UnauthorizedError('Account is inactive or no longer exists');
+        throw new UnauthorizedError('tai khoan k ton tai hoac da bi deactive');
     }
 
     req.user = user;
@@ -34,7 +34,7 @@ export const authenticate = async (req, res, next) => {
 
 export const authorize = (...roles) => (req, res, next) => {
     if (!req.user || !roles.includes(req.user.role)) {
-        throw new ForbiddenError('You do not have permission to perform this action');
+        throw new ForbiddenError('khong co quyen thuc hien');
     }
     return next();
 };

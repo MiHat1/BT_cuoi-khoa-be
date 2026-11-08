@@ -4,7 +4,7 @@ import { HttpResponse } from '../utils/success.helper.js';
 export const orderController = {
     async create(req, res) {
         const order = await orderService.create(req.user.id, req.body.items);
-        return new HttpResponse(res).created(order, 'Order created successfully');
+        return new HttpResponse(res).created(order, 'tao don hang thanh cong');
     },
 
     async listMine(req, res) {
@@ -25,6 +25,6 @@ export const orderController = {
 
     async updateStatus(req, res) {
         const order = await orderService.updateStatus(req.params.id, req.body.status);
-        return new HttpResponse(res).success(order, 'Order status updated successfully');
+        return new HttpResponse(res).success(order, 'thay doi trang thai don hang thanh cong');
     },
 };

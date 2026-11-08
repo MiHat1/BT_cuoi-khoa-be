@@ -6,7 +6,7 @@ export const createOrderSchema = z.object({
         quantity: z.coerce.number().int().positive(),
     })).min(1).max(50).refine(
         (items) => new Set(items.map((item) => item.product_id)).size === items.length,
-        { message: 'Each product can only appear once in an order' }
+        { message: 'moi san pham chi xuat hien 1 lan trong don hang' }
     ),
 });
 

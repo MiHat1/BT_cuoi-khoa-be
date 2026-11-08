@@ -9,10 +9,10 @@ export const registerSchema = z.object({
 });
 
 export const loginSchema = z.object({
-    email: z.string().trim().optional(),
-    full_name: z.string().trim().optional(),
+    email: z.string().trim().email().optional(),
+    full_name: z.string().trim().min(2).optional(),
     identifier: z.string().trim().optional(),
-    password: z.string().min(1).max(72),
+    password: z.string().min(6).max(72),
 }).refine((data) => data.email || data.full_name || data.identifier, {
-    message: 'Either full_name or email is required to login',
+    message: 'can ca email hoac full_name de login',
 });

@@ -19,21 +19,21 @@ export const productController = {
 
     async create(req, res) {
         const product = await productService.create(req.body);
-        return new HttpResponse(res).created(product, 'Product created successfully');
+        return new HttpResponse(res).created(product, 'tao san pham thanh cong');
     },
 
     async update(req, res) {
         const product = await productService.update(req.params.id, req.body);
-        return new HttpResponse(res).success(product, 'Product updated successfully');
+        return new HttpResponse(res).success(product, 'cap nhat san pham thanh cong');
     },
 
     async deactivate(req, res) {
         await productService.deactivate(req.params.id);
-        return new HttpResponse(res).success(null, 'Product deactivated successfully');
+        return new HttpResponse(res).success(null, 'deactive san pham thanh cong');
     },
 
     async delete(req, res) {
         await productService.delete(req.params.id);
-        return new HttpResponse(res).success(null, 'Product deleted successfully');
+        return new HttpResponse(res).success(null, 'xoa san pham thanh cong');
     },
 };

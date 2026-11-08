@@ -12,7 +12,7 @@ export const productService = {
 
     async findById(id, includeInactive = false) {
         const product = await productRepository.findById(id, { includeInactive });
-        if (!product) throw new NotFoundError(`Product not found with id: ${id}`);
+        if (!product) throw new NotFoundError(`san pham k ton tai voi id: ${id}`);
         return product;
     },
 
@@ -21,7 +21,7 @@ export const productService = {
             const id = await productRepository.create(product);
             return await this.findById(id, true);
         } catch (error) {
-            if (error.code === 'ER_DUP_ENTRY') throw new ConflictError('Product already exists');
+            if (error.code === 'ER_DUP_ENTRY') throw new ConflictError('san pham da ton tai');
             throw error;
         }
     },
@@ -31,7 +31,7 @@ export const productService = {
         try {
             await productRepository.update(id, product);
         } catch (error) {
-            if (error.code === 'ER_DUP_ENTRY') throw new ConflictError('Product update conflict');
+            if (error.code === 'ER_DUP_ENTRY') throw new ConflictError('xung dot thay doi ');
             throw error;
         }
         return this.findById(id, true);

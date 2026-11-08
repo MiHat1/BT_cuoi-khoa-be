@@ -27,7 +27,7 @@ const toAuthResponse = (user) => ({
 export const authService = {
     async register({ full_name, email, password }) {
         if (await authRepository.findByEmail(email)) {
-            throw new ConflictError('Email is already registered');
+            throw new ConflictError('da ton tai gmail');
         }
 
         const passwordHash = await bcrypt.hash(password, 12);
@@ -41,13 +41,13 @@ export const authService = {
             });
         } catch (error) {
             if (error.code === 'ER_DUP_ENTRY') {
-                throw new ConflictError('Email is already in use');
+                throw new ConflictError('da ton tai gmail');
             }
             throw error;
         }
 
         const user = await userRepository.findById(userId);
-        if (!user) throw new Error('Registered user could not be loaded');
+        if (!user) throw new Error('k thay user vs id nay');
         return toAuthResponse(user);
     },
 
@@ -55,11 +55,11 @@ export const authService = {
         const loginTarget = email || full_name || identifier;
         const user = await authRepository.findByIdentifier(loginTarget);
         if (!user) {
-            throw new UnauthorizedError('Invalid credentials');
+            throw new UnauthorizedError('k tim thay tk nay');
         }
 
         if (user.is_active === 0) {
-            throw new UnauthorizedError('Account has been deactivated');
+            throw new UnauthorizedError('tai khoan da bi deactive');
         }
 
         let isMatch = false;
@@ -75,7 +75,7 @@ export const authService = {
         }
 
         if (!isMatch) {
-            throw new UnauthorizedError('Invalid credentials');
+            throw new UnauthorizedError('k thay tai khoan');
         }
 
         return toAuthResponse(user);

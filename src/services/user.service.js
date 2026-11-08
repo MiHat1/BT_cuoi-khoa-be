@@ -8,7 +8,7 @@ export const userService = {
 
     async findById(id) {
         const user = await userRepository.findById(id);
-        if (!user) throw new NotFoundError(`User not found with id: ${id}`);
+        if (!user) throw new NotFoundError(`nguoi dung k tim thay voi id : ${id}`);
         return user;
     },
 
@@ -16,7 +16,7 @@ export const userService = {
         if (profile.email) {
             const existingUser = await userRepository.findByEmail(profile.email);
             if (existingUser && Number(existingUser.id) !== Number(id)) {
-                throw new ConflictError('Email is already in use');
+                throw new ConflictError('email da ton tai');
             }
         }
 
@@ -24,7 +24,7 @@ export const userService = {
             await userRepository.updateProfile(id, profile);
         } catch (error) {
             if (error.code === 'ER_DUP_ENTRY') {
-                throw new ConflictError('Email is already in use');
+                throw new ConflictError('email da ton tai');
             }
             throw error;
         }
