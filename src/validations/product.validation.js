@@ -14,7 +14,7 @@ export const updateProductSchema = z.object({
     ...productFields,
     is_active: z.boolean().optional(),
 }).partial().refine((product) => Object.keys(product).length > 0, {
-    message: 'At least one product field is required',
+    message: 'can it nhat 1 san pham',
 });
 
 export const productIdSchema = z.object({

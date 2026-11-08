@@ -3,20 +3,20 @@ import { BadRequestError, NotFoundError } from '../utils/error.helper.js';
 
 const orderError = (error) => {
     if (error.message === 'ORDER_PRODUCT_UNAVAILABLE') {
-        return new BadRequestError('One or more selected products are unavailable or inactive');
+        return new BadRequestError('san pham k cs san hoac da bi deactive');
     }
     if (error.message.startsWith('ORDER_INSUFFICIENT_STOCK:')) {
         const productName = error.message.replace('ORDER_INSUFFICIENT_STOCK:', '');
-        return new BadRequestError(`Insufficient stock for product: ${productName}`);
+        return new BadRequestError(`vuot qua san pham con lai: ${productName}`);
     }
     if (error.message === 'ORDER_TOTAL_TOO_LARGE') {
-        return new BadRequestError('Order total amount exceeds allowable limit');
+        return new BadRequestError('tong gia tri don hang qua lon');
     }
     if (error.message === 'ORDER_ALREADY_FINISHED') {
-        return new BadRequestError('Cannot update status of a finished order (DELIVERED or CANCELLED)');
+        return new BadRequestError('don hang da delivered hoac da cancelled');
     }
     if (error.message === 'ORDER_INVALID_STATUS_TRANSITION') {
-        return new BadRequestError('Invalid order status transition. Allowed: PENDING -> SHIPPING -> DELIVERED or PENDING -> CANCELLED');
+        return new BadRequestError('trang thai don hang k hop le');
     }
     return error;
 };
@@ -30,7 +30,7 @@ export const orderService = {
             throw orderError(error);
         }
         const order = await orderRepository.findById(orderId, { userId });
-        if (!order) throw new NotFoundError('Created order could not be loaded');
+        if (!order) throw new NotFoundError('k the tim thay tao don hang voi id nay');
         return order;
     },
 
@@ -44,14 +44,14 @@ export const orderService = {
 
     async findById(id, { userId } = {}) {
         const order = await orderRepository.findById(id, { userId });
-        if (!order) throw new NotFoundError(`Order not found with id: ${id}`);
+        if (!order) throw new NotFoundError(`don hang khong ton tai voi id : ${id}`);
         return order;
     },
 
     async updateStatus(id, status) {
         try {
             const updated = await orderRepository.updateStatus(id, status);
-            if (!updated) throw new NotFoundError(`Order not found with id: ${id}`);
+            if (!updated) throw new NotFoundError(`don hang khong ton tai voi id : ${id}`);
         } catch (error) {
             throw orderError(error);
         }

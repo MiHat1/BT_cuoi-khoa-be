@@ -172,9 +172,9 @@ export const orderRepository = {
             const currentStatus = String(order.status).toUpperCase();
             const targetStatus = String(status).toUpperCase();
 
-            // Terminal states: DELIVERED or CANCELLED cannot transition further
+            // don hang delivered va cancelled thi khong the chuyen trang thai nx
             if (currentStatus === 'DELIVERED' || currentStatus === 'CANCELLED') {
-                throw new Error('ORDER_ALREADY_FINISHED');
+                throw new Error('don hang dang giao hoac da bi huy');
             }
 
             const allowedTransitions = {
@@ -185,7 +185,7 @@ export const orderRepository = {
             };
 
             if (currentStatus !== targetStatus && !allowedTransitions[currentStatus]?.includes(targetStatus)) {
-                throw new Error('ORDER_INVALID_STATUS_TRANSITION');
+                throw new Error('don hang dang giao hoac da bi huy');
             }
 
             if (targetStatus === 'CANCELLED' && currentStatus !== 'CANCELLED') {
@@ -210,7 +210,7 @@ export const orderRepository = {
                 try {
                     await connection.rollback();
                 } catch (rollbackError) {
-                    console.error('Failed to roll back order status update:', rollbackError);
+                    console.error('roll back that bai cho hanh dong update trang thai:', rollbackError);
                 }
             }
             throw error;

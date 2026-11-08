@@ -17,8 +17,7 @@ const createToken = (user) => jwt.sign(
 const toAuthResponse = (user) => ({
     user: {
         id: user.id,
-        username: user.username || user.full_name,
-        full_name: user.full_name || user.username,
+        full_name: user.full_name,
         email: user.email,
         role: user.role,
     },
@@ -26,41 +25,41 @@ const toAuthResponse = (user) => ({
 });
 
 export const authService = {
-    async register({ username, full_name, email, password }) {
+    async register({ full_name, email, password }) {
         if (await authRepository.findByEmail(email)) {
-            throw new ConflictError('Email is already registered');
+            throw new ConflictError('da ton tai gmail');
         }
 
         const passwordHash = await bcrypt.hash(password, 12);
         let userId;
         try {
             userId = await authRepository.createUser({
-                username: username || full_name,
-                full_name: full_name || username,
+                full_name,
                 email,
                 password_hash: passwordHash,
                 role: 'user',
             });
         } catch (error) {
             if (error.code === 'ER_DUP_ENTRY') {
-                throw new ConflictError('Email or username is already in use');
+                throw new ConflictError('da ton tai gmail');
             }
             throw error;
         }
 
         const user = await userRepository.findById(userId);
-        if (!user) throw new Error('Registered user could not be loaded');
+        if (!user) throw new Error('k thay user vs id nay');
         return toAuthResponse(user);
     },
 
-    async login({ email, password }) {
-        const user = await authRepository.findByEmail(email);
+    async login({ email, full_name, identifier, password }) {
+        const loginTarget = email || full_name || identifier;
+        const user = await authRepository.findByIdentifier(loginTarget);
         if (!user) {
-            throw new UnauthorizedError('Email or password is incorrect');
+            throw new UnauthorizedError('k tim thay tk nay');
         }
 
         if (user.is_active === 0) {
-            throw new UnauthorizedError('Account has been deactivated');
+            throw new UnauthorizedError('tai khoan da bi deactive');
         }
 
         let isMatch = false;
@@ -76,7 +75,7 @@ export const authService = {
         }
 
         if (!isMatch) {
-            throw new UnauthorizedError('Email or password is incorrect');
+            throw new UnauthorizedError('k thay tai khoan');
         }
 
         return toAuthResponse(user);

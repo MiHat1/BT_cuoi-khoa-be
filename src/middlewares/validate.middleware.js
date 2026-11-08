@@ -7,7 +7,7 @@ export const validate = (schema, source = 'body') => (req, res, next) => {
             field: issue.path.join('.'),
             message: issue.message,
         }));
-        return next(new BadRequestError('Invalid input data', errors));
+        return next(new BadRequestError('data k hop le', errors));
     }
 
     req[source] = result.data;

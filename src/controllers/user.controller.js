@@ -9,6 +9,6 @@ export const userController = {
 
     async updateMe(req, res) {
         const user = await userService.updateProfile(req.user.id, req.body);
-        return new HttpResponse(res).success(user, 'Profile updated successfully');
+        return new HttpResponse(res).success(user, 'cap nhat profile thanh cong');
     },
 };

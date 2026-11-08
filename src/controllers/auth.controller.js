@@ -4,11 +4,11 @@ import { HttpResponse } from '../utils/success.helper.js';
 export const authController = {
     async register(req, res) {
         const data = await authService.register(req.body);
-        return new HttpResponse(res).created(data, 'Registration successful');
+        return new HttpResponse(res).created(data, 'dang ky thanh cong');
     },
 
     async login(req, res) {
         const data = await authService.login(req.body);
-        return new HttpResponse(res).success(data, 'Login successful');
+        return new HttpResponse(res).success(data, 'dang nhap thanh cong');
     },
 };
